@@ -1,0 +1,160 @@
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("HELLO WORLD FROM JS");
+
+    // Add styling for highlighted elements
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = `
+    .flourish-default {
+        background-color: yellow;
+        display: inline;
+        color: inherit;
+    }
+    `;
+    document.head.appendChild(styleSheet);
+
+    function parseDataFlourish(flourishAttr) {
+        try {
+            const entries = [].concat(JSON.parse(flourishAttr));
+            const result = [];
+
+            entries.forEach(entry => {
+                ['target', 'target-rx'].forEach(key => {
+                    if (!entry[key]) return;
+
+                    // normalize to array
+                    const items = [].concat(entry[key]);
+
+                    // pull style out, collect patterns
+                    let style = entry.style || 'default';
+                    let flags = key === 'target-rx' ? 'g' : undefined;
+                    const pats = [];
+
+                    items.forEach(it => {
+                        if (typeof it === 'string') {
+                            pats.push(it);
+                        }
+                        else if (it && it.style) {
+                            style = it.style;
+                        }
+                        else if (it && it.source) {
+                            pats.push(it.source);
+                            if (it.flags) flags = it.flags;
+                        }
+                    });
+
+                    if (pats.length) {
+                        const re = new RegExp(
+                            pats.map(p => `(${p})`).join('|'),
+                            flags
+                        );
+                        result.push({ type: key, regex: re, style });
+                    }
+                });
+            });
+
+            return result;
+        }
+        catch {
+            return null;
+        }
+    }
+
+
+    function wrapMatch(dfNoTags, whereMyTerm, flairSpanStart) {
+        return dfNoTags.map(row => {
+            // Calculate distances to match positions
+            let distToStart = whereMyTerm[0] - row.charCountCumul - 1;
+            let distToEnd = whereMyTerm[1] - row.charCountCumul;
+
+            // Determine if the match starts or ends within this segment
+            let startStatus = distToStart >= 0 ? "after" : (distToStart + row.charCount > 0 ? "during" : "before");
+            let endStatus = startStatus === "after" ? "after" : ((distToEnd - distToStart) < row.charCount ? "during" : (distToEnd >= 0 ? "after" : "before"));
+
+            // Wrap the matched text with span based on match location
+            if (startStatus === "before" && endStatus === "after") {
+                row.text = `${flairSpanStart}${row.text}</span>`;
+            } else if (startStatus === "during" && endStatus === "after") {
+                row.text = `${row.text.slice(0, row.charCount + distToStart)}${flairSpanStart}${row.text.slice(row.charCount + distToStart)}</span>`;
+            } else if (startStatus === "before" && endStatus === "during") {
+                row.text = `${flairSpanStart}${row.text.slice(0, row.charCount + distToEnd)}</span>${row.text.slice(row.charCount + distToEnd)}`;
+            } else if (startStatus === "during" && endStatus === "during") {
+                row.text = `${row.text.slice(0, row.charCount + distToStart)}${flairSpanStart}${row.text.slice(row.charCount + distToStart, row.charCount + distToEnd)}</span>${row.text.slice(row.charCount + distToEnd)}`;
+            }
+
+            return row;
+        });
+    }
+
+    function injectFlair(htmlText, toMatch, spanClass = "flourish-default", fixed = false) {
+        // Split HTML into segments based on tags
+        let splitTags = htmlText.split(/(?<=\>)|(?=\<)/);
+
+        // Create an array of objects tracking original text and tag information
+        let dfOrig = splitTags.map((text, index) => ({
+            text: text,
+            idxOrig: index,
+            isTagStart: /\<[^\/][^\>]*\>/.test(text),
+            isTagEnd: /\<\/[^\>]*\>/.test(text)
+        }));
+
+        // Filter out tag elements, keeping only text content
+        let dfNoTags = dfOrig.filter(row => !row.isTagStart && !row.isTagEnd)
+            .map((row, index) => ({
+                ...row,
+                charCount: row.text.length,
+                charCountCumul: index === 0 ? row.text.length : dfOrig.slice(0, index).reduce((acc, r) => acc + r.text.length, 0)
+            }));
+
+        // Locate all matches for the target term in the text
+        let whereMyTerm = [];
+        let fullText = dfNoTags.map(row => row.text).join("");
+        let match;
+        let regex = new RegExp(toMatch, "g"); // fixed option
+        while ((match = regex.exec(fullText)) !== null) {
+            whereMyTerm.push([match.index, match.index + match[0].length]);
+        }
+
+        // Define the span wrapper for matched text
+        let flairSpanStart = `<span class='${spanClass}'>`;
+
+        // Wrap each match in the span styling
+        whereMyTerm.forEach(range => {
+            dfNoTags = wrapMatch(dfNoTags, range, flairSpanStart);
+        });
+
+        // Update original dataset with modified text content
+        dfNoTags.forEach(row => {
+            dfOrig[row.idxOrig].text = row.text;
+        });
+
+        // Reconstruct the modified HTML
+        return dfOrig.map(row => row.text).join("");
+    }
+
+
+    // Find all flourish cells
+    const flourishCells = document.querySelectorAll('div.cell[data-flourish]');
+    console.log(`Found ${flourishCells.length} cells with data-flourish attribute`);
+
+    // Process each flourish cell
+    flourishCells.forEach((cell, index) => {
+        const flourishAttr = cell.getAttribute('data-flourish');
+        const parsedData = parseDataFlourish(flourishAttr);
+        if (!parsedData) return;
+        console.log(parsedData);
+
+        // find only the code chunks you care about
+        const sourceEls = Array.from(cell.querySelectorAll('pre, code, .sourceCode'))
+            .filter(el => !el.closest('.cell-output') && !el.closest('.cell-output-stdout'));
+
+        sourceEls.forEach(el => {
+            let content = el.innerHTML;
+            // let content = el.outerHTML;
+            parsedData.forEach(pattern => {
+                content = injectFlair(content, pattern.regex.source, "flourish-default");
+            });
+            el.innerHTML = content;
+            // el.outerHTML = content;
+        });
+    });
+});
