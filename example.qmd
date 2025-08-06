@@ -11,7 +11,43 @@ This filter adds formatting to heading text.
 
 ```{r}
 #| flourish:
-#| - target-rx: "[0-9]"
+#| - target-rx: "[0-9]*"
+
+x <- 1:10
+mean(x = 1:10)
+```
+
+It is also possible to specify custom formatting with the `style` tag:
+
+```{r}
+#| flourish:
+#| - target:
+#|      - "mean"
+#|      - style:
+#|            - "background-color: #FFC0CB;"
+
+x <- 1:10
+mean(x = 1:10)
+```
+
+This can be used to blank out code pieces for student exercises.
+
+```{r}
+#| flourish:
+#| - target:
+#|     - "mean"
+#|     - style: "color: transparent;"
+
+x <- 1:10
+mean(x = 1:10)
+```
+
+
+
+Note that blanking out pieces with `style` means the answers are still visible in the underlying HTML.  To full replace the answers with placeholder space, use `mask`
+
+```{r}
+#| flourish:
 #| - target:
 #|     - "mean"
 #|     - mask: true
@@ -19,21 +55,4 @@ This filter adds formatting to heading text.
 
 x <- 1:10
 mean(x = 1:10)
-median(1:10)
 ```
-
-```{r}
-#| flourish:
-#| - target:
-#|      - "x"
-#|      - style:
-#|            - "background-color: #484848;"
-
-x <- 1:10
-```
-
-<!-- #| - target: -->
-<!-- #|      - "1:10" -->
-<!-- #|      - style: -->
-<!-- #|            - "text-color: #484848;" -->
-<!-- #|            - "background: #484848;" -->
