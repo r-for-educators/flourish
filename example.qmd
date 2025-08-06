@@ -1,5 +1,5 @@
 ---
-title: "QuartoBroken Example"
+title: "Flourish Example"
 embed-resources: true
 filters:
   - flourish
@@ -11,17 +11,11 @@ This filter adds formatting to heading text.
 
 ```{r}
 #| flourish:
+#| - target-rx: "[0-9]"
 #| - target:
-#|      - "mean"
-#|      - "median"
-#| - target-rx:
-#|      - "[0-9]"
-#|      - style: default
-#| - target:
-#|      - "x <- 1:10"
-#|      - style:
-#|          - "text-color: #484848;"
-#|          - "background: yellow;"
+#|     - "mean"
+#|     - mask: true
+#|     - style: "text-decoration: underline;"
 
 x <- 1:10
 mean(x = 1:10)
@@ -32,6 +26,14 @@ median(1:10)
 #| flourish:
 #| - target:
 #|      - "x"
+#|      - style:
+#|            - "background-color: #484848;"
 
 x <- 1:10
 ```
+
+<!-- #| - target: -->
+<!-- #|      - "1:10" -->
+<!-- #|      - style: -->
+<!-- #|            - "text-color: #484848;" -->
+<!-- #|            - "background: #484848;" -->

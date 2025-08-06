@@ -1,5 +1,4 @@
-function injectFlourishes(chunkString, target, div = "flr-default") {
-
+function injectFlourishes(chunkString, target, className = "flr-default", mask = false) {
 
         // RegEx to find tag boundaries
         // Create list of pieces
@@ -27,11 +26,11 @@ function injectFlourishes(chunkString, target, div = "flr-default") {
         // Smoosh text together, find indices of targets
         const combinedText = textOnly.join('');
         const whereTargets = findTargets(combinedText, target);
-
+        
         // Loop through pieces adding flourish
         const updatedTextTable = textOnlyTable.map(row => ({
                 ...row,
-                newText: addFlourishes(row, whereTargets, div)
+                newText: addFlourishes(row, whereTargets, className, mask)
         }));
 
         // Insert alterted text back into original splitTable
@@ -71,7 +70,7 @@ function getSplitInfo(splitsList) {
         const ends = getCumSum(lengths)
 
         // Find string index of beginning of piece
-        const starts = [0, ...ends.slice(0, -1).map(end => end + 1)];
+        const starts = [0, ...ends.slice(0, -1)];
 
         // Construct table with all info
         const result = splitsList.map((original, i) => {
@@ -109,47 +108,70 @@ function findTargets(str, target) {
                         end
                 };
         });
-
+        
         return matchesWithIndices
 }
 
 
 // Add all flourishes to a single row
-function addFlourishes(row, whereTargets, div) {
+function addFlourishes(row, whereTargets, className, mask) {
 
         let toDo = whereTargets.map(match => ({
                 flrFrom: Math.max(row.start, match.start) - row.start,
-                flrTo: Math.min(row.end, match.end) - row.start,
+                flrTo: Math.min(row.end, match.end) - row.start
         }));
+        
 
-        toDo = toDo.filter(t => t.flrFrom <= t.flrTo);
-
-        const wrapped = wrapMatchesInDiv(row.original, toDo, div);
+        toDo = toDo.filter(t => t.flrFrom < t.flrTo);
+        
+              console.log(row.original);
+      console.log(className);
+      console.log(toDo);
+        
+        const wrapped = wrapMatches(row.original, toDo, className, mask);
+        
+        console.log(wrapped);
 
         return wrapped;
 
 }
 
 // Helper for addFlourishes
-function wrapMatchesInDiv(str, toDo, div) {
+function wrapMatches(str, toDo, className, mask) {
   let result = '';
   let here = 0;
+  
+  // if we are masking, then we use spaces instead of the actual strings
+  if (mask) {
+    
+    for (const row of toDo) {
+      const start = row.flrFrom;
+      const end = row.flrTo;
+      const length = end-start;
 
-  for (const row of toDo) {
-    const start = row.flrFrom;
-    const end = row.flrTo + 1;
+      result += str.slice(here, start);      // Add skipped text
+      result += '<span class="' + className + '">' + Array(length).fill(' ').join(' '); + '</span>'; // Add wrapped match
+      here = end;
+    }
+    
+    
+  } else {
+    
+    for (const row of toDo) {
+      const start = row.flrFrom;
+      const end = row.flrTo;
 
-    result += str.slice(here, start);      // Add skipped text
-    result += '<div class="' + div + '">' + str.slice(start, end) + '</div>'; // Add wrapped match
-    here = end;
+      result += str.slice(here, start);      // Add skipped text
+      result += '<span class="' + className + '">' + str.slice(start, end) + '</span>'; // Add wrapped match
+      here = end;
+    }
+    
+    
   }
+
+
 
   // Add any remaining text after the last match
   result += str.slice(here);
-
   return result;
 }
-
-const input = '<span class="fu">mean</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>)';
-const output = injectFlourishes(input, /= 1:10/g);
-console.log(output);
