@@ -7,7 +7,14 @@ filters:
 
 ## Heading
 
-This filter adds formatting to heading text.
+This filter adds the ability to specify in hashpipe comments instructions for highlighting the code in the rendered chunk.
+
+By default, ordinary yellow highlighting is used:
+
+```
+#| flourish:
+#| - target-rx: "[0-9]*"
+```
 
 ```{r}
 #| flourish:
@@ -17,7 +24,15 @@ x <- 1:10
 mean(x = 1:10)
 ```
 
-It is also possible to specify custom formatting with the `style` tag:
+It is also possible to specify custom formatting with the `style` tag.  Here you must provide the exact text that would appear in a CSS class definition.
+
+```
+#| flourish:
+#| - target:
+#|      - "mean"
+#|      - style:
+#|            - "background-color: #FFC0CB;"
+```
 
 ```{r}
 #| flourish:
@@ -30,13 +45,24 @@ x <- 1:10
 mean(x = 1:10)
 ```
 
-This can be used to blank out code pieces for student exercises.
+One fun way to use this is to blank out code pieces for student exercises.
+
+```
+#| flourish:
+#| - target:
+#|     - "mean"
+#|     - style: 
+#|         - "color: transparent;"
+#|         - "text-decoration: underline;"
+```
 
 ```{r}
 #| flourish:
 #| - target:
 #|     - "mean"
-#|     - style: "color: transparent;"
+#|     - style: 
+#|         - "color: transparent;"
+#|         - "text-decoration: underline;"
 
 x <- 1:10
 mean(x = 1:10)
@@ -44,7 +70,7 @@ mean(x = 1:10)
 
 
 
-Note that blanking out pieces with `style` means the answers are still visible in the underlying HTML.  To full replace the answers with placeholder space, use `mask`
+Note that blanking out pieces with `style` means the answers are still visible in the underlying HTML.  To fully replace the answers with placeholder space, use `mask`:
 
 ```{r}
 #| flourish:
