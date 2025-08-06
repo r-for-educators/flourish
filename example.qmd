@@ -53,7 +53,6 @@ One fun way to use this is to blank out code pieces for student exercises.
 #|     - "mean"
 #|     - style: 
 #|         - "color: transparent;"
-#|         - "text-decoration: underline;"
 ```
 
 ```{r}
@@ -71,6 +70,14 @@ mean(x = 1:10)
 
 
 Note that blanking out pieces with `style` means the answers are still visible in the underlying HTML.  To fully replace the answers with placeholder space, use `mask`:
+
+```
+#| flourish:
+#| - target:
+#|     - "mean"
+#|     - mask: true
+#|     - style: "text-decoration: underline;"
+```
 
 ```{r}
 #| flourish:
