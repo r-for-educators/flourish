@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>QuartoBroken Example</title>
+<title>Flourish Example</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -3201,13 +3201,7 @@ function addFlourishes(row, whereTargets, className, mask) {
 
         toDo = toDo.filter(t => t.flrFrom < t.flrTo);
         
-              console.log(row.original);
-      console.log(className);
-      console.log(toDo);
-        
         const wrapped = wrapMatches(row.original, toDo, className, mask);
-        
-        console.log(wrapped);
 
         return wrapped;
 
@@ -3328,8 +3322,6 @@ function parseDataFlourish(flourishAttr) {
                 // normalize to array
                 const items = [].concat(entry[key]);
                 
-                console.log(items);
-                
                 // pull style out and collect patterns
                 let style = entry.style || 'default';
                 let mask = entry.mask || false;
@@ -3395,7 +3387,7 @@ styleText = `background-color: yellow;
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">QuartoBroken Example</h1>
+<h1 class="title">Flourish Example</h1>
 </div>
 
 

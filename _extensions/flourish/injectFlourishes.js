@@ -124,13 +124,7 @@ function addFlourishes(row, whereTargets, className, mask) {
 
         toDo = toDo.filter(t => t.flrFrom < t.flrTo);
         
-              console.log(row.original);
-      console.log(className);
-      console.log(toDo);
-        
         const wrapped = wrapMatches(row.original, toDo, className, mask);
-        
-        console.log(wrapped);
 
         return wrapped;
 

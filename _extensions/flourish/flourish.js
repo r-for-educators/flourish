@@ -73,8 +73,6 @@ function parseDataFlourish(flourishAttr) {
                 // normalize to array
                 const items = [].concat(entry[key]);
                 
-                console.log(items);
-                
                 // pull style out and collect patterns
                 let style = entry.style || 'default';
                 let mask = entry.mask || false;
