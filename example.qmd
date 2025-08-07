@@ -5,8 +5,6 @@ filters:
   - flourish
 ---
 
-## Heading
-
 This filter adds the ability to specify in hashpipe comments instructions for highlighting the code in the rendered chunk.
 
 By default, ordinary yellow highlighting is used:
@@ -24,7 +22,7 @@ x <- 1:10
 mean(x = 1:10)
 ```
 
-It is also possible to specify custom formatting with the `style` tag.  Here you must provide the exact text that would appear in a CSS class definition.
+It is also possible to specify custom formatting with the `style` tag. Here you must provide the exact text that would appear in a CSS class definition.
 
 ```
 #| flourish:
@@ -66,8 +64,6 @@ One fun way to use this is to blank out code pieces for student exercises.
 x <- 1:10
 mean(x = 1:10)
 ```
-
-
 
 Note that blanking out pieces with `style` means the answers are still visible in the underlying HTML.  To fully replace the answers with placeholder space, use `mask`:
 

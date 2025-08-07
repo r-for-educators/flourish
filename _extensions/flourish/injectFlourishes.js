@@ -1,5 +1,4 @@
 function injectFlourishes(chunkString, target, className = "flr-default", mask = false) {
-
         // RegEx to find tag boundaries
         // Create list of pieces
         const splitPattern = /(?<=>)|(?=<)/g;
@@ -19,14 +18,14 @@ function injectFlourishes(chunkString, target, className = "flr-default", mask =
 
         // Copy over the label field from the original
         textOnlyTable = textOnlyTable.map((row, i) => ({
-          ...row,
-          label: textOnlyOrig[i].label
+                ...row,
+                label: textOnlyOrig[i].label
         }));
 
         // Smoosh text together, find indices of targets
         const combinedText = textOnly.join('');
         const whereTargets = findTargets(combinedText, target);
-        
+
         // Loop through pieces adding flourish
         const updatedTextTable = textOnlyTable.map(row => ({
                 ...row,
@@ -34,7 +33,6 @@ function injectFlourishes(chunkString, target, className = "flr-default", mask =
         }));
 
         // Insert alterted text back into original splitTable
-
         const updatedSplitTable = splitTable.map(row => {
                 if (row.type === "text") {
                         const match = updatedTextTable.find(t => t.label === row.label);
@@ -42,11 +40,9 @@ function injectFlourishes(chunkString, target, className = "flr-default", mask =
                                 ...row,
                                 original: match ? match.newText : row.original
                         };
-
                 } else {
                         return row; // tags stay the same
-                        }
-
+                }
         });
 
         // Rebuild full string and return
@@ -56,13 +52,9 @@ function injectFlourishes(chunkString, target, className = "flr-default", mask =
 
 }
 
-
-
 // Takes list of pieces
 // Returns table of pieces, with length and start and end
-
 function getSplitInfo(splitsList) {
-
         // Get length of each piece
         const lengths = splitsList.map(str => str.length);
 
@@ -84,11 +76,9 @@ function getSplitInfo(splitsList) {
                 };
         });
 
-       // return without empty ones
-       return result.filter(row => row.original.length > 0);
-
+        // return without empty ones
+        return result.filter(row => row.original.length > 0);
 }
-
 
 // Helper function for CumSum
 function getCumSum(arr) {
@@ -98,7 +88,6 @@ function getCumSum(arr) {
 
 // Find all matches in a string, return a table.
 function findTargets(str, target) {
-
         const matchesWithIndices = [...str.matchAll(target)].map(match => {
                 const start = match.index;
                 const end = start + match[0].length;
@@ -108,64 +97,51 @@ function findTargets(str, target) {
                         end
                 };
         });
-        
         return matchesWithIndices
 }
 
-
 // Add all flourishes to a single row
 function addFlourishes(row, whereTargets, className, mask) {
-
         let toDo = whereTargets.map(match => ({
                 flrFrom: Math.max(row.start, match.start) - row.start,
                 flrTo: Math.min(row.end, match.end) - row.start
         }));
-        
 
         toDo = toDo.filter(t => t.flrFrom < t.flrTo);
-        
+
         const wrapped = wrapMatches(row.original, toDo, className, mask);
 
         return wrapped;
-
 }
 
 // Helper for addFlourishes
 function wrapMatches(str, toDo, className, mask) {
-  let result = '';
-  let here = 0;
-  
-  // if we are masking, then we use spaces instead of the actual strings
-  if (mask) {
-    
-    for (const row of toDo) {
-      const start = row.flrFrom;
-      const end = row.flrTo;
-      const length = end-start;
+        let result = '';
+        let here = 0;
 
-      result += str.slice(here, start);      // Add skipped text
-      result += '<span class="' + className + '">' + Array(length).fill(' ').join(' '); + '</span>'; // Add wrapped match
-      here = end;
-    }
-    
-    
-  } else {
-    
-    for (const row of toDo) {
-      const start = row.flrFrom;
-      const end = row.flrTo;
+        // if we are masking, then we use spaces instead of the actual strings
+        if (mask) {
+                for (const row of toDo) {
+                        const start = row.flrFrom;
+                        const end = row.flrTo;
+                        const length = end - start;
 
-      result += str.slice(here, start);      // Add skipped text
-      result += '<span class="' + className + '">' + str.slice(start, end) + '</span>'; // Add wrapped match
-      here = end;
-    }
-    
-    
-  }
+                        result += str.slice(here, start);      // Add skipped text
+                        result += '<span class="' + className + '">' + Array(length).fill(' ').join(' '); + '</span>'; // Add wrapped match
+                        here = end;
+                }
+        } else {
+                for (const row of toDo) {
+                        const start = row.flrFrom;
+                        const end = row.flrTo;
 
+                        result += str.slice(here, start);      // Add skipped text
+                        result += '<span class="' + className + '">' + str.slice(start, end) + '</span>'; // Add wrapped match
+                        here = end;
+                }
+        }
 
-
-  // Add any remaining text after the last match
-  result += str.slice(here);
-  return result;
+        // Add any remaining text after the last match
+        result += str.slice(here);
+        return result;
 }
