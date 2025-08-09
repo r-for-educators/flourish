@@ -10,23 +10,23 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`Found ${flourishCells.length} cells with data-flourish attribute`);
 
     // Process each flourish cell
-    flourishCells.forEach((cell, index) => {
+    for (const cell of flourishCells) {
 
         const flourishAttr = cell.getAttribute('data-flourish');
         const parsedData = parseDataFlourish(flourishAttr);
-        if (!parsedData) return;
+        if (!parsedData) continue;
 
         // Find only the code chunks you care about
         const sourceEls = Array.from(cell.querySelectorAll('code'))
             .filter(el => !el.closest('.cell-output') && !el.closest('.cell-output-stdout'));
 
         // For each code chunk, add flourishes
-        sourceEls.forEach(el => {
+        for (const el of sourceEls) {
 
             let content = el.innerHTML;
 
             // For each regex, look for it and flourish
-            parsedData.forEach(pattern => {
+            for (const pattern of parsedData) {
                 // Default className
                 let className = "flr-default";
                 let styles = pattern.style;
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (styles !== 'default') {
 
                     // Join multiple elements into string
-                    let classText = (Array.isArray(styles) ? styles : [styles]).join('\n');
+                    const classText = (Array.isArray(styles) ? styles : [styles]).join('\n');
 
                     // Generate a unique class name
                     className = `flr-custom-${styleCounter}`;
@@ -45,13 +45,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 // Apply flourishes with the appropriate class name
-                content = injectFlourishes(content, new RegExp(pattern.regex.source, 'g'), className, mask = pattern.mask);
-            });
+                content = injectFlourishes(content, new RegExp(pattern.regex.source, 'g'), className, pattern.mask);
+            }
 
-            // Replace chunk interior
             el.innerHTML = content;
-        });
-    });
+        }
+    }
 });
 
 // Helper function for parsing YAML
@@ -61,9 +60,9 @@ function parseDataFlourish(flourishAttr) {
         const result = [];
 
         // Each separate "target" in YAML is its own entry
-        entries.forEach(entry => {
-            ['target', 'target-rx'].forEach(key => {
-                if (!entry[key]) return;
+        for (const entry of entries) {
+            for (const key of ['target', 'target-rx']) {
+                if (!entry[key]) continue;
 
                 // normalize to array
                 const items = [].concat(entry[key]);
@@ -74,7 +73,7 @@ function parseDataFlourish(flourishAttr) {
                 let flags = key === 'target-rx' ? 'g' : undefined;
                 const pats = [];
 
-                items.forEach(it => {
+                for (const it of items) {
                     if (typeof it === 'string') {
                         pats.push(it);
                     }
@@ -88,7 +87,7 @@ function parseDataFlourish(flourishAttr) {
                     else if (it && it.mask) {
                         mask = it.mask;
                     }
-                });
+                }
 
                 if (pats.length) {
                     const re = new RegExp(
@@ -97,8 +96,8 @@ function parseDataFlourish(flourishAttr) {
                     );
                     result.push({ type: key, regex: re, style: style, mask: mask });
                 }
-            });
-        });
+            }
+        }
         return result;
     }
     catch {

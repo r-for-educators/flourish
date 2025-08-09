@@ -64,7 +64,7 @@ function getSplitInfo(splitsList) {
         // Find string index of beginning of piece
         const starts = [0, ...ends.slice(0, -1)];
 
-        // Construct table with all info
+        // Construct table with all info and remove empty rows
         const result = splitsList.map((original, i) => {
                 return {
                         label: i,
@@ -74,10 +74,9 @@ function getSplitInfo(splitsList) {
                         end: ends[i],
                         type: /^<.*>$/.test(original) ? "tags" : "text"
                 };
-        });
+        }).filter(row => row.original.length > 0);
 
-        // return without empty ones
-        return result.filter(row => row.original.length > 0);
+        return result;
 }
 
 // Helper function for CumSum
@@ -105,13 +104,9 @@ function addFlourishes(row, whereTargets, className, mask) {
         let toDo = whereTargets.map(match => ({
                 flrFrom: Math.max(row.start, match.start) - row.start,
                 flrTo: Math.min(row.end, match.end) - row.start
-        }));
+        })).filter(t => t.flrFrom < t.flrTo);
 
-        toDo = toDo.filter(t => t.flrFrom < t.flrTo);
-
-        const wrapped = wrapMatches(row.original, toDo, className, mask);
-
-        return wrapped;
+        return wrapMatches(row.original, toDo, className, mask);
 }
 
 // Helper for addFlourishes
