@@ -119,29 +119,15 @@ function wrapMatches(str, toDo, className, mask) {
         let result = '';
         let here = 0;
 
-        // if we are masking, then we use spaces instead of the actual strings
-        if (mask) {
-                for (const row of toDo) {
-                        const start = row.flrFrom;
-                        const end = row.flrTo;
-                        const length = end - start;
+        const getContent = mask
+                ? (start, end) => ' '.repeat(end - start)
+                : (start, end) => str.slice(start, end);
 
-                        result += str.slice(here, start);      // Add skipped text
-                        result += '<span class="' + className + '">' + Array(length).fill(' ').join(' '); + '</span>'; // Add wrapped match
-                        here = end;
-                }
-        } else {
-                for (const row of toDo) {
-                        const start = row.flrFrom;
-                        const end = row.flrTo;
-
-                        result += str.slice(here, start);      // Add skipped text
-                        result += '<span class="' + className + '">' + str.slice(start, end) + '</span>'; // Add wrapped match
-                        here = end;
-                }
+        for (const { flrFrom: start, flrTo: end } of toDo) {
+                result += str.slice(here, start); // Add skipped text
+                result += `<span class="${className}">${getContent(start, end)}</span>`;
+                here = end;
         }
 
-        // Add any remaining text after the last match
-        result += str.slice(here);
-        return result;
+        return result + str.slice(here);
 }
